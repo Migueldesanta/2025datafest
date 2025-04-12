@@ -17,7 +17,7 @@ ui <- dashboardPage(
   
   # Header ----
   dashboardHeader(
-    title = "Office Market Forecast System",
+    title = "Penn State F4 Team",
     titleWidth = 280
   ),
   
@@ -46,14 +46,21 @@ ui <- dashboardPage(
                 br(),
                 h3("Project Overview"),
                 p("This dashboard provides an interactive visualization system to support data-driven market entry strategies in commercial real estate."),
-                h3("Team Info"),
-                p("Michael Yun · Your University · April 2025"),
+                h3("Team Members"),
+                tags$ul(
+                  tags$li("Michael Yun"),
+                  tags$li("Runyi Zhang"),
+                  tags$li("Jingchun Zhang"),
+                  tags$li("Zhaoyu Hou")
+                ),
                 br(),
                 h3("Navigation"),
+                tags$p("This dashboard includes four main sections:"),
                 tags$ul(
-                  tags$li("→ Project Intro & Methods"),
-                  tags$li("→ Market Overview (Where?)"),
-                  tags$li("→ Trend Forecast (When?)")
+                  tags$li(tags$b("Project Introduction & Methods") , " — Learn about our data sources, research question, and analytical workflow."),
+                  tags$li(tags$b("Market Overview (Where?)") , " — Explore city-level leasing competitiveness using maps and radar charts."),
+                  tags$li(tags$b("Trend Forecast (When?)") , " — View next-quarter leasing predictions and strategic recommendations."),
+                  tags$li(tags$b("References") , " — See all supporting data sources and R packages used.")
                 )
               )
       ),
@@ -169,7 +176,6 @@ ui <- dashboardPage(
     )
   )
 )
-
 
 server <- function(input, output, session) {
   
