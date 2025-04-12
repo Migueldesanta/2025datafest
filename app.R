@@ -10,7 +10,7 @@ library(fmsb)          # For radar chart
 library(dplyr)         # For data wrangling
 library(tidyr)
 library(readr)
-
+library(DT)
 # UI ----
 ui <- dashboardPage(
   skin = "blue",
@@ -51,9 +51,9 @@ ui <- dashboardPage(
                 br(),
                 h3("Navigation"),
                 tags$ul(
-                  tags$li(actionLink("go_intro", "→ Project Intro & Methods")),
-                  tags$li(actionLink("go_overview", "→ Market Overview (Where?)")),
-                  tags$li(actionLink("go_forecast", "→ Trend Forecast (When?)"))
+                  tags$li("→ Project Intro & Methods"),
+                  tags$li("→ Market Overview (Where?)"),
+                  tags$li("→ Trend Forecast (When?)")
                 )
               )
       ),
@@ -74,32 +74,49 @@ ui <- dashboardPage(
                   tags$li("Unemployment.csv: BLS quarterly unemployment")
                 ),
                 br(),
-                h3("Analysis Workflow"),
-                tags$p("→ Data → Aggregation → Trend Scoring → ML Forecast → Visualization"),
-                tags$img(src = "workflow.png", width = "75%") # ensure image in www/
+                h3("Workflow Diagram"),
+                grVizOutput("workflow_diagram", height = "600px")
               )
       ),
       
-      # Page 3 - Market Overview ----
+      # Page 3 - Overview ----
       tabItem(tabName = "overview",
               fluidPage(
-                h2("🌐 Market Overview (Where?)"),
-                p("Click on a city in the map to explore trend score, radar chart, and recommendation."),
+                h2("🌍 Market Overview (Where?)"),
+                p("Explore market competitiveness across major U.S. cities. Based on trend scores calculated per quarter."),
+                
+                # Quarter selection
                 fluidRow(
-                  column(width = 8,
-                         leafletOutput("map", height = 500),
-                         br(),
-                         h5("Bubble size: total leased SF · Color: trend label (Emerging / Stable / Declining)")
+                  column(4,
+                         selectInput("selected_year", "Select Year:", choices = c(2019:2024), selected = 2024)
                   ),
-                  column(width = 4,
-                         h4("Selected City:"),
-                         verbatimTextOutput("selected_city"),
-                         br(),
-                         h4("5-Dimension Radar Chart"),
-                         plotOutput("radar_chart", height = 300),
-                         br(),
-                         h4("Recommendation:"),
-                         textOutput("recommendation_text")
+                  column(4,
+                         selectInput("selected_quarter", "Select Quarter:", choices = c("Q1", "Q2", "Q3", "Q4"), selected = "Q4")
+                  )
+                ),
+                
+                br(),
+                
+                # Map + Radar Chart
+                fluidRow(
+                  column(width = 7,
+                         h3("📍 National Leasing Heatmap"),
+                         leafletOutput("heatmap", height = 500),
+                         helpText("Bubble size = total leased SF · Color = trend label (Emerging = green, Stable = orange, Declining = red)")
+                  ),
+                  column(width = 5,
+                         h3("📊 Radar Chart of Top 5 Cities"),
+                         plotOutput("top5_radar", height = 500)
+                  )
+                ),
+                
+                br(), hr(),
+                
+                # City ranking table
+                fluidRow(
+                  column(12,
+                         h3("🏙️ Top 5 Cities by Trend Score"),
+                         DT::dataTableOutput("top5_table")
                   )
                 )
               )
@@ -153,24 +170,45 @@ ui <- dashboardPage(
   )
 )
 
-# Define server logic ----
+
 server <- function(input, output, session) {
+  
+  # === Workflow Diagram (Page 2) ===
+  output$workflow_diagram <- DiagrammeR::renderGrViz({
+    DiagrammeR::grViz("
+      digraph flowchart {
+        graph [layout = dot, rankdir = LR, nodesep = 0.5, ranksep = 0.5]
 
-  ## Set up Info button ----
-  observeEvent(
-    eventExpr = input$info,
-    handlerExpr = {
-      sendSweetAlert(
-        session = session,
-        type = "info",
-        title = "Information",
-        text = "This App Template will help you get started building your own app"
-      )
-    }
-  )
+        node [fontname = Helvetica, fontsize = 40, shape = box, style = filled, fillcolor = dodgerblue, fontcolor = white]
+        A [label = 'Stage 1\\nFeature Construction']
+        B [label = 'Stage 2\\nTrend Scoring']
+        C [label = 'Stage 3\\nML Forecasting']
+        D [label = 'Stage 4\\nVisualization']
 
+        node [fontname = Helvetica, fontsize = 32, shape = box, style = filled, fillcolor = lightgoldenrod1, fontcolor = black]
+        A1 [label = '• leasedSF ≥ 10,000\\n• Merge Rent, Occupancy, Unemployment']
+        B1 [label = '• Z-score + Equal weights\\n• Label cities by trend']
+        C1 [label = '• Lag features\\n• XGBoost → Q1 2025 prediction']
+        D1 [label = '• Map + Radar + Plotly\\n• ENTER / WAIT / EXIT']
 
+        node [shape = ellipse, fillcolor = crimson, fontcolor = white, fontsize = 36]
+        START [label = 'START']
+        END [label = 'END']
+
+        START -> A -> B -> C -> D -> END
+        A -> A1
+        B -> B1
+        C -> C1
+        D -> D1
+      }
+    ")
+  })
+  
+  
 }
+
+
+
 
 # Boast App Call ----
 boastUtils::boastApp(ui = ui, server = server)
