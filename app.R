@@ -4,6 +4,12 @@ library(shinydashboard)
 library(shinyBS)
 library(shinyWidgets)
 library(boastUtils)
+library(leaflet)       # For map output
+library(plotly)        # For interactive line chart
+library(fmsb)          # For radar chart
+library(dplyr)         # For data wrangling
+library(tidyr)
+library(readr)
 
 # UI ----
 ui <- dashboardPage(
