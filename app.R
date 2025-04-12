@@ -18,10 +18,7 @@ ui <- dashboardPage(
   # Header ----
   dashboardHeader(
     title = "Office Market Forecast System",
-    titleWidth = 280,
-    tags$li(class = "dropdown", actionLink("info", icon("info-circle"))),
-    tags$li(class = "dropdown", boastUtils::surveyLink(name = "leasing_forecast_app")),
-    tags$li(class = "dropdown", tags$a(id = "home", href = 'https://www.savills.com', icon("home")))
+    titleWidth = 280
   ),
   
   # Sidebar ----
