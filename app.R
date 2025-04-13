@@ -13,7 +13,7 @@ library(readr)
 library(DT)
 library(DiagrammeR)
 library(ggplot2)
-
+library(plotly)
 # UI ----
 ui <- dashboardPage(
   skin = "blue",
@@ -24,10 +24,9 @@ ui <- dashboardPage(
     sidebarMenu(
       id = "pages",
       menuItem("Home", tabName = "home", icon = icon("home")),
-      menuItem("Project Intro & Methods", tabName = "intro", icon = icon("info-circle")),
+      menuItem("Method", tabName = "intro", icon = icon("info-circle")),
       menuItem("Market Overview (Where?)", tabName = "overview", icon = icon("globe")),
-      menuItem("Trend Forecast (When?)", tabName = "forecast", icon = icon("chart-line")),
-      menuItem("References", tabName = "references", icon = icon("book"))
+      menuItem("Trend Forecast (When?)", tabName = "forecast", icon = icon("chart-line"))
     ),
     tags$div(class = "sidebar-logo", boastUtils::sidebarFooter())
   ),
@@ -37,67 +36,139 @@ ui <- dashboardPage(
       # Page 1 - Home ----
       tabItem(tabName = "home",
               fluidPage(
-                titlePanel("🏢 City Leasing Trend Recommendation System"),
+                titlePanel("🏢  City Leasing Forecast & Market Explorer"),
                 br(),
-                h3("Project Overview"),
-                p("This dashboard provides an interactive visualization system to support data-driven market entry strategies in commercial real estate."),
+                h3("Overview"),
+                p(tags$b("The COVID-19 pandemic"), " disrupted U.S. office leasing markets. To understand which cities are best positioned for market entry as the sector recovers, we focused on data from ", 
+                  tags$b("2021 Q4 onward"), ". Using ", tags$b("large lease records"), " and ", tags$b("market indicators"), 
+                  ", we developed ", tags$b("trend scores"), " to capture ", tags$b("city competitiveness"), 
+                  " and applied ", tags$b("machine learning"), " to forecast ", tags$b("leasing activity for 2025 Q1"), "."
+                ),
+                h3("Research Question"),
+                p("Based on ", tags$b("leasing trends"), " and ", tags$b("market fundamentals"), 
+                  ", which ", tags$b("U.S. cities"), " are most ", tags$b("competitive"), 
+                  " and ", tags$b("suitable for market entry in the next quarter"), "?"),
                 h3("Team Members"),
                 tags$ul(
                   tags$li("Michael Yun"),
                   tags$li("Runyi Zhang"),
                   tags$li("Jingchun Zhang"),
                   tags$li("Zhaoyu Hou")
-                ),
-                br(),
-                h3("Navigation"),
-                tags$ul(
-                  tags$li(tags$b("Project Introduction & Methods")),
-                  tags$li(tags$b("Market Overview (Where?)")),
-                  tags$li(tags$b("Trend Forecast (When?)")),
-                  tags$li(tags$b("References"))
                 )
               )
       ),
       
-      # Page 2 - Intro ----
-      tabItem(tabName = "intro",
-              fluidPage(
-                h2("🔍 Project Introduction & Methodology"),
-                br(),
-                h3("Research Question"),
-                p("Which cities are worth entering now based on leasing competitiveness and projected growth?"),
-                br(),
-                h3("Data Files Used"),
-                tags$ul(
-                  tags$li("Leases.csv"),
-                  tags$li("Price and Availability Data.csv"),
-                  tags$li("Major Market Occupancy Data.csv"),
-                  tags$li("Unemployment.csv")
-                ),
-                br(),
-                h3("Feature Construction Workflow"),
-                grVizOutput("workflow_feature", height = "auto")
-              )
-      ),
+      # Page 2 - Methodology ----
+      tabItem(
+        tabName = "intro",
+        withMathJax(),
+        
+          h2("🛠️ Methodology"),
+          p("We focused on commercial leasing recovery patterns after COVID-19. Using 2021 Q4 onward data, we constructed trend scores to evaluate market competitiveness and applied machine learning to forecast future leasing activity."),
+          
+          # ---- Box 1: Data Description ----
+          box(
+            title = strong("Data Description"),
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = TRUE,
+            width = '100%',
+            tags$ul(
+              tags$li("Time frame: 2021 Q4 – 2024 Q4"),
+              tags$li("Leasing data filtered by area ≥ 10,000 SF"),
+              tags$li("Quarterly panel data by city"),
+              tags$li("Merged indicators: rent, vacancy, occupancy, unemployment")
+            )
+          ),
+          
+          # ---- Box 2: Feature Engineering ----
+          box(
+            title = strong("Feature Engineering"),
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = TRUE,
+            width = '100%',
+            tags$ul(
+              tags$li("Created lag variables for key indicators"),
+              tags$li("Calculated rate of change (e.g., Δ vacancy, Δ occupancy)"),
+              tags$li("Log-transformed leased SF to stabilize variance"),
+              tags$li("Aligned features into city-quarter panel structure")
+            )
+          ),
+          
+          # ---- Box 3: Market Review (Trend Scoring) ----
+          box(
+            title = strong("Market Review (Trend Scoring)"),
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = TRUE,
+            width = '100%',
+            tags$ul(
+              tags$li("Standardized 5 market indicators using Z-scores"),
+              tags$li("Included metrics: leased SF, rent (↓), vacancy (↓), occupancy (↑), unemployment (↓)"),
+              tags$li("Computed composite trend score by equal weighting"),
+              tags$li("Higher score implies greater leasing competitiveness")
+            ),
+            p("Mathematical formula for trend score:"),
+            p("$$
+      \\text{Trend Score}_{it} = \\frac{1}{5} \\left( Z_{leased\\_sf} - Z_{rent} - Z_{vacancy} + Z_{occupancy} - Z_{unemployment} \\right)
+      $$")
+          ),
+          
+          # ---- Box 4: Trend Forecasting ----
+          box(
+            title = strong("Trend Forecasting"),
+            status = "primary",
+            solidHeader = TRUE,
+            collapsible = TRUE,
+            width = '100%',
+            tags$ul(
+              tags$li("Target: log-transformed leased SF in 2025 Q1"),
+              tags$li("Model: XGBoost regression"),
+              tags$li("Features: lagged panel of 2021–2024 indicators"),
+              tags$li("Train/validation split: 80% / 20%"),
+              tags$li("Evaluation metrics: RMSE and \\(R^2\\)"),
+              tags$li("Back-transform forecast for interpretability")
+            )
+          )
+        )
+      ,
       
-      # Page 3 - Market Overview ----
+      # ---- Page 3 - Market Overview ----
       tabItem(tabName = "overview",
               fluidPage(
-                h2("🌍 Market Overview (2024 Q4 Only)"),
-                p("Explore market competitiveness across major U.S. cities based on 2024 Q4 trend scores."),
+                h2("🌍 Market Overview"),
+                p("Explore market competitiveness based on trend scores since 2021 Q4."),
+                br(),
+                h3("Trend Scoring Workflow"),
+                grVizOutput("workflow_scoring", height = "auto"),
+                br(), hr(),
+                
                 fluidRow(
-                  column(6, h3("📍 Market Trend Heatmap"), leafletOutput("heatmap", height = 500)),
-                  column(6, h3("📊 Trend Score Distribution"), plotOutput("score_hist", height = 500))
+                  column(6,
+                         h3("📍 Market Trend Heatmap"),
+                         leafletOutput("heatmap", height = 550)
+                  ),
+                  column(6,
+                         h3("📊 3D Trend Score Distribution (Since 2021 Q4)"),
+                         sidebarPanel(
+                           checkboxGroupInput("selected_3d_cities",
+                                              label = "Select Cities for 3D View:",
+                                              choices = NULL,
+                                              selected = NULL),
+                           width = 12
+                         ),
+                         plotlyOutput("trend_score_3d", height = 500)
+                  )
                 ),
                 br(), hr(),
                 fluidRow(
-                  column(12, h3("🏙️ Top 5 Markets by Trend Score"), DTOutput("top5_table"))
-                ),
-                br(),
-                h3("Trend Scoring Workflow"),
-                grVizOutput("workflow_scoring", height = "auto")
-              )
-      ),
+                  column(12,
+                         h3("🏙️ Top 5 Markets by Average Trend Score"),
+                         DTOutput("top5_table")
+                  )
+                )
+              )),
       
       # Page 4 - Trend Forecast ----
       tabItem(tabName = "forecast",
@@ -117,131 +188,111 @@ ui <- dashboardPage(
                     plotOutput("forecast_plot", height = 450),
                     br(),
                     h4("📋 Comparison Table"),
-                    DTOutput("forecast_comparison"),
-                    br(),
-                    h3("ML Forecasting Workflow"),
-                    grVizOutput("workflow_forecasting", height = "auto")
+                    DTOutput("forecast_comparison")
                   )
                 )
               )
-      ),
-      
-      
-      # Page 5 - References ----
-      tabItem(tabName = "references",
-              fluidPage(
-                h2("📚 References"),
-                br(),
-                h3("Data Sources"),
-                tags$ul(
-                  tags$li("Savills Lease Transaction Data (2018–2024)"),
-                  tags$li("Price & Availability Metrics"),
-                  tags$li("Kastle Occupancy Reports"),
-                  tags$li("U.S. Bureau of Labor Statistics (BLS)")
-                ),
-                h3("Packages"),
-                tags$ul(
-                  tags$li("shiny, shinydashboard, shinyWidgets, shinyBS, boastUtils"),
-                  tags$li("leaflet, plotly, fmsb, dplyr, tidyr, readr")
-                ),
-                br(),
-                boastUtils::copyrightInfo()
-              )
+      )
       )
     )
   )
-)
+
 
 # ---- Server ----
 server <- function(input, output, session) {
   
-  # ---- Workflow: Feature Construction (Page 2) ----
-  output$workflow_feature <- renderGrViz({
-    grViz("
-    digraph feature {
-      graph [layout = dot, rankdir = LR]
 
-      node [shape = box, style = filled, fillcolor = lightblue, fontname = Helvetica, fontsize = 13]
-
-      A [label = 'Merge multi-source data\\n(leases, rent, unemployment, etc.)']
-      B [label = 'Construct city-quarter level panel dataset']
-      C [label = 'Create lag features\\n(e.g., prior leased SF, occupancy rate change)']
-      D [label = 'Log-transform leased SF\\n(log1p(total_leased_sf))']
-
-      A -> B -> C -> D
-    }
-    ")
-  })
   
-  # ---- Workflow: Trend Scoring (Page 3) ----
-  output$workflow_scoring <- renderGrViz({
-    grViz("
-    digraph scoring {
-      graph [layout = dot, rankdir = LR]
-
-      node [shape = box, style = filled, fillcolor = lightblue, fontname = Helvetica, fontsize = 13]
-
-      A [label = 'Filter leases\\n(SF ≥ 10,000)']
-      B [label = 'Aggregate leases\\n(city & quarter)']
-      C [label = 'Join rent, vacancy, occupancy, unemployment']
-      D [label = 'Standardize metrics (Z-score)']
-      E [label = 'Calculate trend score\\n(Equal-weight average)']
-
-      A -> B -> C -> D -> E
-    }
-    ")
-  })
-  
-  # ---- Workflow: ML Forecasting (Page 4) ----
-  output$workflow_forecasting <- renderGrViz({
-    grViz("
-    digraph ml {
-      graph [layout = dot, rankdir = LR]
-
-      node [shape = box, style = filled, fillcolor = lightblue, fontname = Helvetica, fontsize = 13]
-
-      A [label = 'Target: log(total_leased_sf)']
-      B [label = 'Create lagged features\\n(log_rent, availability, etc.)']
-      C [label = 'Split data: training & validation']
-      D [label = 'Train Random Forest / XGBoost']
-      E [label = 'Evaluate RMSE, MAE, R²']
-      F [label = 'Predict leasing for 2025 Q1']
-
-      A -> B -> C -> D -> E -> F
-    }
-    ")
-  })
-  
-  # ---- Page 3: Market Overview ----
+  # ---- Load and Filter Data ----
   trend_data <- read_csv("trend_scores_with_coords.csv")
-  selected_data <- trend_data %>% filter(year == 2024, quarter == "Q4")
   
+  # Use only 2021 Q4 and later
+  trend_filtered <- trend_data %>%
+    filter(year > 2021 | (year == 2021 & quarter == "Q4"))
+  
+  # ---- Compute Top 5 Markets by Avg Score ----
+  top5_summary <- trend_filtered %>%
+    group_by(market) %>%
+    summarise(
+      avg_score = mean(trend_score, na.rm = TRUE),
+      lat = first(lat),
+      lon = first(lon),
+      .groups = "drop"
+    ) %>%
+    arrange(desc(avg_score)) %>%
+    slice_head(n = 5)
+  
+  # ---- Heatmap with Labels ----
   output$heatmap <- renderLeaflet({
-    pal <- colorNumeric("RdYlGn", selected_data$trend_score)
-    leaflet(data = selected_data) %>%
+    pal <- colorNumeric("RdYlGn", domain = trend_filtered$trend_score)
+    
+    leaflet(data = trend_filtered) %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
       addCircleMarkers(
         lng = ~lon, lat = ~lat,
-        radius = 8,
-        fillColor = ~pal(trend_score),
-        color = "white",
-        fillOpacity = 0.8,
-        label = ~paste0(market, ": ", round(trend_score, 2))
+        color = ~pal(trend_score),
+        radius = 6,
+        stroke = FALSE,
+        fillOpacity = 0.7
       ) %>%
-      addLegend("bottomright", pal = pal, values = ~trend_score, title = "Trend Score")
+      addLabelOnlyMarkers(
+        data = top5_summary,
+        lng = ~lon, lat = ~lat,
+        label = ~market,
+        labelOptions = labelOptions(noHide = TRUE, direction = "top", textOnly = TRUE)
+      ) %>%
+      addLegend("bottomright", pal = pal, values = ~trend_score,
+                title = "Trend Score")
   })
   
-  output$score_hist <- renderPlot({
-    hist(selected_data$trend_score, breaks = 15, col = "steelblue", border = "white",
-         main = "Distribution of Trend Scores", xlab = "Trend Score")
-  })
-  
+  # ---- Top 5 Table ----
   output$top5_table <- renderDT({
-    selected_data %>%
-      arrange(desc(trend_score)) %>%
-      select(market, trend_score) %>%
-      mutate(trend_score = round(trend_score, 2)) %>%
-      head(5)
+    top5_summary %>%
+      transmute(
+        Market = market,
+        `Avg Trend Score` = round(avg_score, 3)
+      )
+  })
+  
+  # ---- Update 3D Selector ----
+  observe({
+    updateCheckboxGroupInput(
+      session, "selected_3d_cities",
+      choices = top5_summary$market,
+      selected = top5_summary$market
+    )
+  })
+  
+  # ---- 3D Plot with Actual Trend Scores ----
+  output$trend_score_3d <- renderPlotly({
+    req(input$selected_3d_cities)
+    
+    plot_data <- trend_filtered %>%
+      filter(market %in% input$selected_3d_cities) %>%
+      mutate(
+        quarter_num = as.numeric(substr(quarter, 2, 2)),
+        year_qtr = year + (quarter_num - 1) / 4
+      )
+    
+    plot_ly(
+      data = plot_data,
+      x = ~market,
+      y = ~trend_score,
+      z = ~year_qtr,
+      type = "scatter3d",
+      mode = "lines+markers",
+      color = ~market,
+      line = list(width = 4),
+      marker = list(size = 5)
+    ) %>%
+      layout(
+        scene = list(
+          xaxis = list(title = "Market"),
+          yaxis = list(title = "Trend Score"),
+          zaxis = list(title = "Time (Year.Quarter)")
+        ),
+        title = "3D Trend Score Trajectory (Top 5 Markets)"
+      )
   })
   
   # ---- Page 4: Forecast ----
