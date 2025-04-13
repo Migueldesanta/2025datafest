@@ -4,24 +4,23 @@ library(shinydashboard)
 library(shinyBS)
 library(shinyWidgets)
 library(boastUtils)
-library(leaflet)       # For map output
-library(plotly)        # For interactive line chart
-library(fmsb)          # For radar chart
-library(dplyr)         # For data wrangling
+library(leaflet)
+library(plotly)
+library(fmsb)
+library(dplyr)
 library(tidyr)
 library(readr)
 library(DT)
+
 # UI ----
 ui <- dashboardPage(
   skin = "blue",
   
-  # Header ----
   dashboardHeader(
     title = "Penn State F4 Team",
     titleWidth = 280
   ),
   
-  # Sidebar ----
   dashboardSidebar(
     width = 250,
     sidebarMenu(
@@ -35,7 +34,6 @@ ui <- dashboardPage(
     tags$div(class = "sidebar-logo", boastUtils::sidebarFooter())
   ),
   
-  # Body ----
   dashboardBody(
     tabItems(
       
@@ -57,10 +55,10 @@ ui <- dashboardPage(
                 h3("Navigation"),
                 tags$p("This dashboard includes four main sections:"),
                 tags$ul(
-                  tags$li(tags$b("Project Introduction & Methods") , " — Learn about our data sources, research question, and analytical workflow."),
-                  tags$li(tags$b("Market Overview (Where?)") , " — Explore city-level leasing competitiveness using maps and radar charts."),
-                  tags$li(tags$b("Trend Forecast (When?)") , " — View next-quarter leasing predictions and strategic recommendations."),
-                  tags$li(tags$b("References") , " — See all supporting data sources and R packages used.")
+                  tags$li(tags$b("Project Introduction & Methods"), " — Learn about our data sources, research question, and analytical workflow."),
+                  tags$li(tags$b("Market Overview (Where?)"), " — Explore city-level leasing competitiveness using maps and radar charts."),
+                  tags$li(tags$b("Trend Forecast (When?)"), " — View next-quarter leasing predictions and strategic recommendations."),
+                  tags$li(tags$b("References"), " — See all supporting data sources and R packages used.")
                 )
               )
       ),
@@ -89,40 +87,25 @@ ui <- dashboardPage(
       # Page 3 - Overview ----
       tabItem(tabName = "overview",
               fluidPage(
-                h2("🌍 Market Overview (Where?)"),
-                p("Explore market competitiveness across major U.S. cities. Based on trend scores calculated per quarter."),
+                h2("🌍 Market Overview (2024 Q4 Only)"),
+                p("Explore market competitiveness across major U.S. cities based on 2024 Q4 trend scores."),
                 
-                # Quarter selection
                 fluidRow(
-                  column(4,
-                         selectInput("selected_year", "Select Year:", choices = c(2019:2024), selected = 2024)
+                  column(6,
+                         h3("📍 Market Trend Heatmap"),
+                         leafletOutput("heatmap", height = 500)
                   ),
-                  column(4,
-                         selectInput("selected_quarter", "Select Quarter:", choices = c("Q1", "Q2", "Q3", "Q4"), selected = "Q4")
-                  )
-                ),
-                
-                br(),
-                
-                # Map + Radar Chart
-                fluidRow(
-                  column(width = 7,
-                         h3("📍 National Leasing Heatmap"),
-                         leafletOutput("heatmap", height = 500),
-                         helpText("Bubble size = total leased SF · Color = trend label (Emerging = green, Stable = orange, Declining = red)")
-                  ),
-                  column(width = 5,
-                         h3("📊 Radar Chart of Top 5 Cities"),
-                         plotOutput("top5_radar", height = 500)
+                  column(6,
+                         h3("📊 Trend Score Distribution"),
+                         plotOutput("score_hist", height = 500)
                   )
                 ),
                 
                 br(), hr(),
                 
-                # City ranking table
                 fluidRow(
                   column(12,
-                         h3("🏙️ Top 5 Cities by Trend Score"),
+                         h3("🏙️ Top 5 Markets by Trend Score"),
                          DT::dataTableOutput("top5_table")
                   )
                 )
@@ -177,9 +160,10 @@ ui <- dashboardPage(
   )
 )
 
+# Server ----
 server <- function(input, output, session) {
   
-  # === Workflow Diagram (Page 2) ===
+  # Workflow Diagram
   output$workflow_diagram <- DiagrammeR::renderGrViz({
     DiagrammeR::grViz("
       digraph flowchart {
@@ -210,11 +194,46 @@ server <- function(input, output, session) {
     ")
   })
   
+  # Data Load
+  trend_data <- read_csv("trend_scores_with_coords.csv")
+  selected_data <- trend_data %>%
+    filter(year == 2024, quarter == "Q4")
   
+  output$heatmap <- renderLeaflet({
+    pal <- colorNumeric(palette = "RdYlGn", domain = selected_data$trend_score)
+    leaflet(data = selected_data) %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      addCircleMarkers(
+        lng = ~lon,
+        lat = ~lat,
+        radius = 8,
+        fillColor = ~pal(trend_score),
+        color = "white",
+        weight = 1,
+        fillOpacity = 0.8,
+        label = ~paste0(market, ": ", round(trend_score, 2)),
+        popup = ~paste0("<b>", market, "</b><br>Trend Score: ", round(trend_score, 2))
+      ) %>%
+      addLegend("bottomright", pal = pal, values = ~trend_score, title = "Trend Score")
+  })
+  
+  output$score_hist <- renderPlot({
+    hist(selected_data$trend_score,
+         breaks = 15,
+         col = "steelblue",
+         border = "white",
+         main = "Distribution of Trend Scores",
+         xlab = "Trend Score")
+  })
+  
+  output$top5_table <- DT::renderDataTable({
+    selected_data %>%
+      arrange(desc(trend_score)) %>%
+      select(market, trend_score, lat, lon) %>%
+      mutate(trend_score = round(trend_score, 2)) %>%
+      head(5)
+  })
 }
 
-
-
-
-# Boast App Call ----
+# Run App ----
 boastUtils::boastApp(ui = ui, server = server)
