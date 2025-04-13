@@ -140,10 +140,6 @@ ui <- dashboardPage(
                 h2("🌍 Market Overview"),
                 p("Explore market competitiveness based on trend scores since 2021 Q4."),
                 br(),
-                h3("Trend Scoring Workflow"),
-                grVizOutput("workflow_scoring", height = "auto"),
-                br(), hr(),
-                
                 fluidRow(
                   column(6,
                          h3("📍 Market Trend Heatmap"),
