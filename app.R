@@ -11,7 +11,7 @@ library(dplyr)
 library(tidyr)
 library(readr)
 library(DT)
-
+library(DiagrammeR)
 # UI ----
 ui <- dashboardPage(
   skin = "blue",
