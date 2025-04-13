@@ -138,7 +138,7 @@ ui <- dashboardPage(
       tabItem(tabName = "overview",
               fluidPage(
                 h2("🌍 Market Overview"),
-                p("Explore market competitiveness based on trend scores since 2021 Q4."),
+                p("This section visualizes city-level leasing competitiveness using a composite trend score. The heatmap highlights average market performance since 2021 Q4, while the 3D plot reveals quarterly trend dynamics in top-performing cities."),
                 br(),
                 fluidRow(
                   column(6,
@@ -170,7 +170,7 @@ ui <- dashboardPage(
       tabItem(tabName = "forecast",
               fluidPage(
                 h2("📈 Trend Forecast (2025 Q1)"),
-                p("This page shows projected leasing activity (2025 Q1) for top-performing markets."),
+                p("This section presents machine learning-based forecasts of total leased square footage for 2025 Q1. We can explore projected leasing trends in the top 5 high-growth cities and compare them to recent performance."),
                 sidebarLayout(
                   sidebarPanel(
                     checkboxGroupInput(
