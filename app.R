@@ -12,14 +12,12 @@ library(tidyr)
 library(readr)
 library(DT)
 library(DiagrammeR)
+library(ggplot2)
+
 # UI ----
 ui <- dashboardPage(
   skin = "blue",
-  
-  dashboardHeader(
-    title = "Penn State F4 Team",
-    titleWidth = 280
-  ),
+  dashboardHeader(title = "Penn State F4 Team", titleWidth = 280),
   
   dashboardSidebar(
     width = 250,
@@ -36,7 +34,6 @@ ui <- dashboardPage(
   
   dashboardBody(
     tabItems(
-      
       # Page 1 - Home ----
       tabItem(tabName = "home",
               fluidPage(
@@ -53,12 +50,11 @@ ui <- dashboardPage(
                 ),
                 br(),
                 h3("Navigation"),
-                tags$p("This dashboard includes four main sections:"),
                 tags$ul(
-                  tags$li(tags$b("Project Introduction & Methods"), " — Learn about our data sources, research question, and analytical workflow."),
-                  tags$li(tags$b("Market Overview (Where?)"), " — Explore city-level leasing competitiveness using maps and radar charts."),
-                  tags$li(tags$b("Trend Forecast (When?)"), " — View next-quarter leasing predictions and strategic recommendations."),
-                  tags$li(tags$b("References"), " — See all supporting data sources and R packages used.")
+                  tags$li(tags$b("Project Introduction & Methods")),
+                  tags$li(tags$b("Market Overview (Where?)")),
+                  tags$li(tags$b("Trend Forecast (When?)")),
+                  tags$li(tags$b("References"))
                 )
               )
       ),
@@ -73,67 +69,63 @@ ui <- dashboardPage(
                 br(),
                 h3("Data Files Used"),
                 tags$ul(
-                  tags$li("Leases.csv: Individual leasing transactions"),
-                  tags$li("Price and Availability Data.csv: Market-level rent & space"),
-                  tags$li("Major Market Occupancy Data.csv: Kastle swipe estimates"),
-                  tags$li("Unemployment.csv: BLS quarterly unemployment")
+                  tags$li("Leases.csv"),
+                  tags$li("Price and Availability Data.csv"),
+                  tags$li("Major Market Occupancy Data.csv"),
+                  tags$li("Unemployment.csv")
                 ),
                 br(),
-                h3("Workflow Diagram"),
-                grVizOutput("workflow_diagram", height = "600px")
+                h3("Feature Construction Workflow"),
+                grVizOutput("workflow_feature", height = "auto")
               )
       ),
       
-      # Page 3 - Overview ----
+      # Page 3 - Market Overview ----
       tabItem(tabName = "overview",
               fluidPage(
                 h2("🌍 Market Overview (2024 Q4 Only)"),
                 p("Explore market competitiveness across major U.S. cities based on 2024 Q4 trend scores."),
-                
                 fluidRow(
-                  column(6,
-                         h3("📍 Market Trend Heatmap"),
-                         leafletOutput("heatmap", height = 500)
-                  ),
-                  column(6,
-                         h3("📊 Trend Score Distribution"),
-                         plotOutput("score_hist", height = 500)
-                  )
+                  column(6, h3("📍 Market Trend Heatmap"), leafletOutput("heatmap", height = 500)),
+                  column(6, h3("📊 Trend Score Distribution"), plotOutput("score_hist", height = 500))
                 ),
-                
                 br(), hr(),
-                
                 fluidRow(
-                  column(12,
-                         h3("🏙️ Top 5 Markets by Trend Score"),
-                         DT::dataTableOutput("top5_table")
+                  column(12, h3("🏙️ Top 5 Markets by Trend Score"), DTOutput("top5_table"))
+                ),
+                br(),
+                h3("Trend Scoring Workflow"),
+                grVizOutput("workflow_scoring", height = "auto")
+              )
+      ),
+      
+      # Page 4 - Trend Forecast ----
+      tabItem(tabName = "forecast",
+              fluidPage(
+                h2("📈 Trend Forecast (2025 Q1)"),
+                p("This page shows projected leasing activity (2025 Q1) for top-performing markets."),
+                sidebarLayout(
+                  sidebarPanel(
+                    checkboxGroupInput(
+                      inputId = "selected_top5_cities",
+                      label = p(strong("Top 5 Cities by Growth Rate (2025 Q1)")),
+                      choices = NULL,
+                      selected = NULL
+                    )
+                  ),
+                  mainPanel(
+                    plotOutput("forecast_plot", height = 450),
+                    br(),
+                    h4("📋 Comparison Table"),
+                    DTOutput("forecast_comparison"),
+                    br(),
+                    h3("ML Forecasting Workflow"),
+                    grVizOutput("workflow_forecasting", height = "auto")
                   )
                 )
               )
       ),
       
-      # Page 4 - Forecast ----
-      tabItem(tabName = "forecast",
-              fluidPage(
-                h2("📈 Leasing Trend Forecast (When?)"),
-                p("Forecast next-quarter leasing activity and growth rate for selected cities."),
-                sidebarLayout(
-                  sidebarPanel(
-                    selectInput("forecast_city", "Select a City:", choices = NULL),
-                    br(),
-                    h4("Growth Prediction for Q1 2025:"),
-                    verbatimTextOutput("predicted_growth_text"),
-                    h4("Recommendation:"),
-                    textOutput("forecast_recommendation")
-                  ),
-                  mainPanel(
-                    plotlyOutput("forecast_plot", height = 500),
-                    br(),
-                    h5("Solid line: historical leasing volume · Red dashed point: forecasted Q1 2025")
-                  )
-                )
-              )
-      ),
       
       # Page 5 - References ----
       tabItem(tabName = "references",
@@ -160,80 +152,177 @@ ui <- dashboardPage(
   )
 )
 
-# Server ----
+# ---- Server ----
 server <- function(input, output, session) {
   
-  # Workflow Diagram
-  output$workflow_diagram <- DiagrammeR::renderGrViz({
-    DiagrammeR::grViz("
-      digraph flowchart {
-        graph [layout = dot, rankdir = LR, nodesep = 0.5, ranksep = 0.5]
+  # ---- Workflow: Feature Construction (Page 2) ----
+  output$workflow_feature <- renderGrViz({
+    grViz("
+    digraph feature {
+      graph [layout = dot, rankdir = LR]
 
-        node [fontname = Helvetica, fontsize = 40, shape = box, style = filled, fillcolor = dodgerblue, fontcolor = white]
-        A [label = 'Stage 1\\nFeature Construction']
-        B [label = 'Stage 2\\nTrend Scoring']
-        C [label = 'Stage 3\\nML Forecasting']
-        D [label = 'Stage 4\\nVisualization']
+      node [shape = box, style = filled, fillcolor = lightblue, fontname = Helvetica, fontsize = 13]
 
-        node [fontname = Helvetica, fontsize = 32, shape = box, style = filled, fillcolor = lightgoldenrod1, fontcolor = black]
-        A1 [label = '• leasedSF ≥ 10,000\\n• Merge Rent, Occupancy, Unemployment']
-        B1 [label = '• Z-score + Equal weights\\n• Label cities by trend']
-        C1 [label = '• Lag features\\n• XGBoost → Q1 2025 prediction']
-        D1 [label = '• Map + Radar + Plotly\\n• ENTER / WAIT / EXIT']
+      A [label = 'Merge multi-source data\\n(leases, rent, unemployment, etc.)']
+      B [label = 'Construct city-quarter level panel dataset']
+      C [label = 'Create lag features\\n(e.g., prior leased SF, occupancy rate change)']
+      D [label = 'Log-transform leased SF\\n(log1p(total_leased_sf))']
 
-        node [shape = ellipse, fillcolor = crimson, fontcolor = white, fontsize = 36]
-        START [label = 'START']
-        END [label = 'END']
-
-        START -> A -> B -> C -> D -> END
-        A -> A1
-        B -> B1
-        C -> C1
-        D -> D1
-      }
+      A -> B -> C -> D
+    }
     ")
   })
   
-  # Data Load
+  # ---- Workflow: Trend Scoring (Page 3) ----
+  output$workflow_scoring <- renderGrViz({
+    grViz("
+    digraph scoring {
+      graph [layout = dot, rankdir = LR]
+
+      node [shape = box, style = filled, fillcolor = lightblue, fontname = Helvetica, fontsize = 13]
+
+      A [label = 'Filter leases\\n(SF ≥ 10,000)']
+      B [label = 'Aggregate leases\\n(city & quarter)']
+      C [label = 'Join rent, vacancy, occupancy, unemployment']
+      D [label = 'Standardize metrics (Z-score)']
+      E [label = 'Calculate trend score\\n(Equal-weight average)']
+
+      A -> B -> C -> D -> E
+    }
+    ")
+  })
+  
+  # ---- Workflow: ML Forecasting (Page 4) ----
+  output$workflow_forecasting <- renderGrViz({
+    grViz("
+    digraph ml {
+      graph [layout = dot, rankdir = LR]
+
+      node [shape = box, style = filled, fillcolor = lightblue, fontname = Helvetica, fontsize = 13]
+
+      A [label = 'Target: log(total_leased_sf)']
+      B [label = 'Create lagged features\\n(log_rent, availability, etc.)']
+      C [label = 'Split data: training & validation']
+      D [label = 'Train Random Forest / XGBoost']
+      E [label = 'Evaluate RMSE, MAE, R²']
+      F [label = 'Predict leasing for 2025 Q1']
+
+      A -> B -> C -> D -> E -> F
+    }
+    ")
+  })
+  
+  # ---- Page 3: Market Overview ----
   trend_data <- read_csv("trend_scores_with_coords.csv")
-  selected_data <- trend_data %>%
-    filter(year == 2024, quarter == "Q4")
+  selected_data <- trend_data %>% filter(year == 2024, quarter == "Q4")
   
   output$heatmap <- renderLeaflet({
-    pal <- colorNumeric(palette = "RdYlGn", domain = selected_data$trend_score)
+    pal <- colorNumeric("RdYlGn", selected_data$trend_score)
     leaflet(data = selected_data) %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
       addCircleMarkers(
-        lng = ~lon,
-        lat = ~lat,
+        lng = ~lon, lat = ~lat,
         radius = 8,
         fillColor = ~pal(trend_score),
         color = "white",
-        weight = 1,
         fillOpacity = 0.8,
-        label = ~paste0(market, ": ", round(trend_score, 2)),
-        popup = ~paste0("<b>", market, "</b><br>Trend Score: ", round(trend_score, 2))
+        label = ~paste0(market, ": ", round(trend_score, 2))
       ) %>%
       addLegend("bottomright", pal = pal, values = ~trend_score, title = "Trend Score")
   })
   
   output$score_hist <- renderPlot({
-    hist(selected_data$trend_score,
-         breaks = 15,
-         col = "steelblue",
-         border = "white",
-         main = "Distribution of Trend Scores",
-         xlab = "Trend Score")
+    hist(selected_data$trend_score, breaks = 15, col = "steelblue", border = "white",
+         main = "Distribution of Trend Scores", xlab = "Trend Score")
   })
   
-  output$top5_table <- DT::renderDataTable({
+  output$top5_table <- renderDT({
     selected_data %>%
       arrange(desc(trend_score)) %>%
-      select(market, trend_score, lat, lon) %>%
+      select(market, trend_score) %>%
       mutate(trend_score = round(trend_score, 2)) %>%
       head(5)
+  })
+  
+  # ---- Page 4: Forecast ----
+  observe({
+    forecast_data <- read_csv("features1_wide.csv") %>%
+      mutate(growth_rate = (`2025_Q1` - `2024_Q4`) / `2024_Q4`) %>%
+      arrange(desc(growth_rate))
+    
+    top5_cities <- forecast_data %>%
+      slice_max(growth_rate, n = 5) %>%
+      pull(market)
+    
+    updateCheckboxGroupInput(
+      session,
+      inputId = "selected_top5_cities",
+      choices = top5_cities,
+      selected = top5_cities
+    )
+    
+    output$forecast_plot <- renderPlot({
+      req(input$selected_top5_cities)
+      
+      plot_data <- forecast_data %>%
+        filter(market %in% input$selected_top5_cities) %>%
+        pivot_longer(cols = -c(market, growth_rate), names_to = "time", values_to = "leased_sf") %>%
+        filter(!is.na(leased_sf)) %>%
+        mutate(
+          year = as.numeric(substr(time, 1, 4)),
+          quarter = substr(time, 6, 7),
+          quarter_num = case_when(
+            quarter == "Q1" ~ 1,
+            quarter == "Q2" ~ 2,
+            quarter == "Q3" ~ 3,
+            quarter == "Q4" ~ 4,
+            TRUE ~ NA_real_
+          ),
+          time_numeric = year + (quarter_num - 1) / 4
+        ) %>%
+        arrange(market, time_numeric)
+      
+      dashed_segments <- forecast_data %>%
+        filter(market %in% input$selected_top5_cities) %>%
+        transmute(
+          market,
+          x = 2024 + 3/4,
+          xend = 2025,
+          y = `2024_Q4`,
+          yend = `2025_Q1`
+        )
+      
+      ggplot() +
+        geom_line(data = plot_data %>% filter(time != "2025_Q1"),
+                  aes(x = time_numeric, y = leased_sf, group = market, color = market),
+                  size = 1) +
+        geom_segment(data = dashed_segments,
+                     aes(x = x, xend = xend, y = y, yend = yend, color = market),
+                     linetype = "dashed", linewidth = 1.2) +
+        geom_point(data = plot_data,
+                   aes(x = time_numeric, y = leased_sf, color = market),
+                   size = 2) +
+        labs(
+          title = "Total Leased SF by Quarter",
+          x = "Time", y = "Leased SF", color = "Market"
+        ) +
+        theme_minimal()
+    })
+    
+    output$forecast_comparison <- renderDT({
+      req(input$selected_top5_cities)
+      forecast_data %>%
+        filter(market %in% input$selected_top5_cities) %>%
+        transmute(
+          Market = market,
+          `2024 Q4 SF` = round(`2024_Q4`),
+          `2025 Q1 Predicted` = round(`2025_Q1`),
+          `Growth Rate` = paste0(round(growth_rate * 100, 1), "%")
+        )
+    })
   })
 }
 
 # Run App ----
 boastUtils::boastApp(ui = ui, server = server)
+
