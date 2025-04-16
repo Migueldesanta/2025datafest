@@ -1,4 +1,4 @@
-# Load Packages ----
+# ---- Load Packages ----
 library(shiny)
 library(shinydashboard)
 library(shinyBS)
@@ -13,40 +13,38 @@ library(readr)
 library(DT)
 library(DiagrammeR)
 library(ggplot2)
-library(plotly)
-# UI ----
+
+# ---- UI ----
 ui <- dashboardPage(
   skin = "blue",
   dashboardHeader(title = "Penn State F4 Team", titleWidth = 280),
-  
   dashboardSidebar(
     width = 250,
     sidebarMenu(
       id = "pages",
       menuItem("Home", tabName = "home", icon = icon("home")),
       menuItem("Method", tabName = "intro", icon = icon("info-circle")),
-      menuItem("Market Overview (Where?)", tabName = "overview", icon = icon("globe")),
-      menuItem("Trend Forecast (When?)", tabName = "forecast", icon = icon("chart-line"))
+      menuItem("Market Overview", tabName = "overview", icon = icon("globe")),
+      menuItem("Trend Forecast", tabName = "forecast", icon = icon("chart-line"))
     ),
     tags$div(class = "sidebar-logo", boastUtils::sidebarFooter())
   ),
-  
   dashboardBody(
     tabItems(
-      # Page 1 - Home ----
+      # ---- Page 1: Home ----
       tabItem(tabName = "home",
               fluidPage(
                 titlePanel("🏢  City Leasing Forecast & Market Explorer"),
                 br(),
                 h3("Overview"),
-                p(tags$b("The COVID-19 pandemic"), " disrupted U.S. office leasing markets. To understand which cities are best positioned for market entry as the sector recovers, we focused on data from ", 
-                  tags$b("2021 Q4 onward"), ". Using ", tags$b("large lease records"), " and ", tags$b("market indicators"), 
-                  ", we developed ", tags$b("trend scores"), " to capture ", tags$b("city competitiveness"), 
+                p(tags$b("The COVID-19 pandemic"), " disrupted U.S. office leasing markets. To understand which cities are best positioned for market entry as the sector recovers, we focused on data from ",
+                  tags$b("2021 Q4 onward"), ". Using ", tags$b("large lease records"), " and ", tags$b("market indicators"),
+                  ", we developed ", tags$b("trend scores"), " to capture ", tags$b("city competitiveness"),
                   " and applied ", tags$b("machine learning"), " to forecast ", tags$b("leasing activity for 2025 Q1"), "."
                 ),
                 h3("Research Question"),
-                p("Based on ", tags$b("leasing trends"), " and ", tags$b("market fundamentals"), 
-                  ", which ", tags$b("U.S. cities"), " are most ", tags$b("competitive"), 
+                p("Based on ", tags$b("leasing trends"), " and ", tags$b("market fundamentals"),
+                  ", which ", tags$b("U.S. cities"), " are most ", tags$b("competitive"),
                   " and ", tags$b("suitable for market entry in the next quarter"), "?"),
                 h3("Team Members"),
                 tags$ul(
@@ -58,83 +56,56 @@ ui <- dashboardPage(
               )
       ),
       
-      # Page 2 - Methodology ----
-      tabItem(
-        tabName = "intro",
-        withMathJax(),
-        
-          h2("🛠️ Methodology"),
-          p("We focused on commercial leasing recovery patterns after COVID-19. Using 2021 Q4 onward data, we constructed trend scores to evaluate market competitiveness and applied machine learning to forecast future leasing activity."),
-          
-          # ---- Box 1: Data Description ----
-          box(
-            title = strong("Data Description"),
-            status = "primary",
-            solidHeader = TRUE,
-            collapsible = TRUE,
-            width = '100%',
-            tags$ul(
-              tags$li("Time frame: 2021 Q4 – 2024 Q4"),
-              tags$li("Leasing data filtered by area ≥ 10,000 SF"),
-              tags$li("Quarterly panel data by city"),
-              tags$li("Merged indicators: rent, vacancy, occupancy, unemployment")
-            )
-          ),
-          
-          # ---- Box 2: Feature Engineering ----
-          box(
-            title = strong("Feature Engineering"),
-            status = "primary",
-            solidHeader = TRUE,
-            collapsible = TRUE,
-            width = '100%',
-            tags$ul(
-              tags$li("Created lag variables for key indicators"),
-              tags$li("Calculated rate of change (e.g., Δ vacancy, Δ occupancy)"),
-              tags$li("Log-transformed leased SF to stabilize variance"),
-              tags$li("Aligned features into city-quarter panel structure")
-            )
-          ),
-          
-          # ---- Box 3: Market Review (Trend Scoring) ----
-          box(
-            title = strong("Market Review (Trend Scoring)"),
-            status = "primary",
-            solidHeader = TRUE,
-            collapsible = TRUE,
-            width = '100%',
-            tags$ul(
-              tags$li("Standardized 5 market indicators using Z-scores"),
-              tags$li("Included metrics: leased SF, rent (↓), vacancy (↓), occupancy (↑), unemployment (↓)"),
-              tags$li("Computed composite trend score by equal weighting"),
-              tags$li("Higher score implies greater leasing competitiveness")
-            ),
-            p("Mathematical formula for trend score:"),
-            p("$$
-      \\text{Trend Score}_{it} = \\frac{1}{5} \\left( Z_{leased\\_sf} - Z_{rent} - Z_{vacancy} + Z_{occupancy} - Z_{unemployment} \\right)
-      $$")
-          ),
-          
-          # ---- Box 4: Trend Forecasting ----
-          box(
-            title = strong("Trend Forecasting"),
-            status = "primary",
-            solidHeader = TRUE,
-            collapsible = TRUE,
-            width = '100%',
-            tags$ul(
-              tags$li("Target: log-transformed leased SF in 2025 Q1"),
-              tags$li("Model: XGBoost regression"),
-              tags$li("Features: lagged panel of 2021–2024 indicators"),
-              tags$li("Train/validation split: 80% / 20%"),
-              tags$li("Evaluation metrics: RMSE and \\(R^2\\)"),
-              tags$li("Back-transform forecast for interpretability")
-            )
-          )
-        )
-      ,
+      # ---- Page 2: Methodology ----
+      tabItem(tabName = "intro",
+              withMathJax(),
+              h2("🛠️ Methodology"),
+              p("We focused on commercial leasing recovery patterns after COVID-19. Using 2021 Q4 onward data, we constructed trend scores to evaluate market competitiveness and applied machine learning to forecast future leasing activity."),
+              box(
+                title = strong("Data Description"), status = "primary", solidHeader = TRUE, collapsible = TRUE, width = '100%',
+                tags$ul(
+                  tags$li("Time frame: 2021 Q4 – 2024 Q4"),
+                  tags$li("Leasing data filtered by area ≥ 10,000 SF"),
+                  tags$li("Quarterly panel data by city"),
+                  tags$li("Merged indicators: rent, vacancy, occupancy, unemployment")
+                )
+              ),
+              box(
+                title = strong("Feature Engineering"), status = "primary", solidHeader = TRUE, collapsible = TRUE, width = '100%',
+                tags$ul(
+                  tags$li("Created lag variables for key indicators"),
+                  tags$li("Calculated rate of change (e.g., Δ vacancy, Δ occupancy)"),
+                  tags$li("Log-transformed leased SF to stabilize variance"),
+                  tags$li("Aligned features into city-quarter panel structure")
+                )
+              ),
+              box(
+                title = strong("Market Review (Trend Scoring)"), status = "primary", solidHeader = TRUE, collapsible = TRUE, width = '100%',
+                tags$ul(
+                  tags$li("Standardized 5 market indicators using Z-scores"),
+                  tags$li("Included metrics: leased SF, rent (↓), vacancy (↓), occupancy (↑), unemployment (↓)"),
+                  tags$li("Computed composite trend score by equal weighting"),
+                  tags$li("Higher score implies greater leasing competitiveness")
+                ),
+                p("Mathematical formula for trend score:"),
+                p("$$
+            \\text{Trend Score}_{it} = \\frac{1}{5} \\left( Z_{leased\\_sf} - Z_{rent} - Z_{vacancy} + Z_{occupancy} - Z_{unemployment} \\right)
+            $$")
+              ),
+              box(
+                title = strong("Trend Forecasting"), status = "primary", solidHeader = TRUE, collapsible = TRUE, width = '100%',
+                tags$ul(
+                  tags$li("Target: log-transformed leased SF in 2025 Q1"),
+                  tags$li("Model: XGBoost regression"),
+                  tags$li("Features: lagged panel of 2021–2024 indicators"),
+                  tags$li("Train/validation split: 80% / 20%"),
+                  tags$li("Evaluation metrics: RMSE and \\(R^2\\)"),
+                  tags$li("Back-transform forecast for interpretability")
+                )
+              )
+      ),
       
-      # ---- Page 3 - Market Overview ----
+      # ---- Page 3: Market Overview ----
       tabItem(tabName = "overview",
               fluidPage(
                 h2("🌍 Market Overview"),
@@ -151,7 +122,8 @@ ui <- dashboardPage(
                            checkboxGroupInput("selected_3d_cities",
                                               label = "Select Cities for 3D View:",
                                               choices = NULL,
-                                              selected = NULL),
+                                              selected = NULL
+                           ),
                            width = 12
                          ),
                          plotlyOutput("trend_score_3d", height = 500)
@@ -164,9 +136,10 @@ ui <- dashboardPage(
                          DTOutput("top5_table")
                   )
                 )
-              )),
+              )
+      ),
       
-      # Page 4 - Trend Forecast ----
+      # ---- Page 4: Forecast ----
       tabItem(tabName = "forecast",
               fluidPage(
                 h2("📈 Trend Forecast (2025 Q1)"),
@@ -189,22 +162,15 @@ ui <- dashboardPage(
                 )
               )
       )
-      )
     )
   )
-
+)
 
 # ---- Server ----
 server <- function(input, output, session) {
-  
-
-  
   # ---- Load and Filter Data ----
   trend_data <- read_csv("trend_scores_with_coords.csv")
-  
-  # Use only 2021 Q4 and later
-  trend_filtered <- trend_data %>%
-    filter(year > 2021 | (year == 2021 & quarter == "Q4"))
+  trend_filtered <- trend_data %>% filter(year > 2021 | (year == 2021 & quarter == "Q4"))
   
   # ---- Compute Top 5 Markets by Avg Score ----
   top5_summary <- trend_filtered %>%
@@ -237,8 +203,7 @@ server <- function(input, output, session) {
         label = ~market,
         labelOptions = labelOptions(noHide = TRUE, direction = "top", textOnly = TRUE)
       ) %>%
-      addLegend("bottomright", pal = pal, values = ~trend_score,
-                title = "Trend Score")
+      addLegend("bottomright", pal = pal, values = ~trend_score, title = "Trend Score")
   })
   
   # ---- Top 5 Table ----
@@ -259,7 +224,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # ---- 3D Plot with Actual Trend Scores ----
+  # ---- 3D Plot ----
   output$trend_score_3d <- renderPlotly({
     req(input$selected_3d_cities)
     
@@ -291,7 +256,7 @@ server <- function(input, output, session) {
       )
   })
   
-  # ---- Page 4: Forecast ----
+  # ---- Forecast Page ----
   observe({
     forecast_data <- read_csv("features1_wide.csv") %>%
       mutate(growth_rate = (`2025_Q1` - `2024_Q4`) / `2024_Q4`) %>%
@@ -341,18 +306,14 @@ server <- function(input, output, session) {
       
       ggplot() +
         geom_line(data = plot_data %>% filter(time != "2025_Q1"),
-                  aes(x = time_numeric, y = leased_sf, group = market, color = market),
-                  size = 1) +
+                  aes(x = time_numeric, y = leased_sf, group = market, color = market), size = 1) +
         geom_segment(data = dashed_segments,
                      aes(x = x, xend = xend, y = y, yend = yend, color = market),
                      linetype = "dashed", linewidth = 1.2) +
         geom_point(data = plot_data,
-                   aes(x = time_numeric, y = leased_sf, color = market),
-                   size = 2) +
-        labs(
-          title = "Total Leased SF by Quarter",
-          x = "Time", y = "Leased SF", color = "Market"
-        ) +
+                   aes(x = time_numeric, y = leased_sf, color = market), size = 2) +
+        labs(title = "Total Leased SF by Quarter",
+             x = "Time", y = "Leased SF", color = "Market") +
         theme_minimal()
     })
     
@@ -370,6 +331,7 @@ server <- function(input, output, session) {
   })
 }
 
-# Run App ----
+# ---- Run App ----
 boastUtils::boastApp(ui = ui, server = server)
+
 
