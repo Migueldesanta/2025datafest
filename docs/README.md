@@ -59,7 +59,7 @@ The dashboard includes four interactive pages:
 
 ## 👥 Team
 
-- @MichaelYun  
+- [@MichaelYun](https://github.com/MichaelYun)
 - @RunyiZhang  
 - @JingchunZhang  
 - @ZhaoyuHou
