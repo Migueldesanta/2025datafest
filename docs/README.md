@@ -66,6 +66,16 @@ The dashboard includes four interactive pages:
 
 ---
 
+## 🔒 Data Availability
+
+Due to data licensing agreements and privacy considerations, the original leasing dataset used in this project has been **removed from the repository**.
+
+The app and code remain accessible for reference, but full functionality (e.g., trend scoring and forecasting) requires the proprietary source data, which is not publicly distributed.
+
+If you are a competition judge, instructor, or reviewer seeking access, please contact the project team directly.
+
+---
+
 ## 📄 License
 
 This project is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** license.
