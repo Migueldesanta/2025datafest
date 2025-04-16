@@ -1,1 +1,0 @@
-The www folder is where you can place additional resources for your app such as static pictures. Not every app will need a www folder.
