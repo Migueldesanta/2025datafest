@@ -44,16 +44,16 @@ The dashboard includes four interactive pages:
 ## 📸 Screenshots
 
 ### 🏠 Page 1 – Home
-![Page 1](www/page1.png)
+![Page 1](page1.png)
 
 ### 🛠️ Page 2 – Methodology
-![Page 2](www/page2.png)
+![Page 2](page2.png)
 
 ### 🌍 Page 3 – Market Overview
-![Page 3](www/page3.png)
+![Page 3](page3.png)
 
 ### 📈 Page 4 – Trend Forecast
-![Page 4](www/page4.png)
+![Page 4](page4.png)
 
 ---
 
