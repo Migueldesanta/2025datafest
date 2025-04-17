@@ -4,7 +4,6 @@
 ![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange)
 ![Year: 2025](https://img.shields.io/badge/year-2025-lightgrey)
 ![Status: new app](https://img.shields.io/badge/lifecycle-newapp-brightgreen)
-[![Contributors](https://img.shields.io/github/contributors/Migueldesanta/2025datafest?style=flat-square)]
 
 
 An interactive Shiny dashboard for analyzing U.S. office leasing trends and forecasting 2025 Q1 leasing activity using machine learning.
