@@ -24,7 +24,7 @@ The dashboard includes four interactive pages:
 2. **Method** – Data, feature engineering, and model methodology  
 3. **Market Overview** – Heatmap and 3D trend score visualizations  
 4. **Trend Forecast** – Leasing growth forecast for 2025 Q1
-
+````` 
 📁 Root Directory
 │
 ├── 📂 docs/                # Project documentation and screenshots
@@ -40,7 +40,7 @@ The dashboard includes four interactive pages:
 ├── CODEOWNERS             # GitHub file to auto-assign code reviewers
 ├── .gitignore             # Files and folders to ignore in version control
 ├── .lintr                 # Linting rules for R code style
-
+````` 
 ---
 
 ## 🧠 Methods Summary
