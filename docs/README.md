@@ -6,11 +6,6 @@
 ![Status: new app](https://img.shields.io/badge/lifecycle-newapp-brightgreen)
 
 An interactive Shiny dashboard for analyzing U.S. office leasing trends and forecasting 2025 Q1 leasing activity using machine learning.
-
----
-
-## 🏆 Competition
-
 This project was developed as part of the **2025 ASA DataFest at Penn State University**, a national data science competition organized by the American Statistical Association.
 
 ---
@@ -21,7 +16,7 @@ To identify the most competitive and investment-ready U.S. cities in the post-CO
 
 ---
 
-## 📁 App Structure
+## 📁 Structure
 
 The dashboard includes four interactive pages:
 
@@ -29,6 +24,22 @@ The dashboard includes four interactive pages:
 2. **Method** – Data, feature engineering, and model methodology  
 3. **Market Overview** – Heatmap and 3D trend score visualizations  
 4. **Trend Forecast** – Leasing growth forecast for 2025 Q1
+
+📁 Root Directory
+│
+├── 📂 docs/                # Project documentation and screenshots
+│   └── page.png           # Page-level screenshots
+│
+├── 📂 R/                   # Custom R scripts used in data processing and modeling
+│   ├── build_features.R    # Feature engineering pipeline
+│   ├── train_model.R       # Model training and forecasting
+│   └── trend_scoring.R     # Market trend score calculation
+│
+├── app.R                  # Main Shiny app UI + server code
+├── DESCRIPTION            # App metadata (title, author, license, etc.)
+├── CODEOWNERS             # GitHub file to auto-assign code reviewers
+├── .gitignore             # Files and folders to ignore in version control
+├── .lintr                 # Linting rules for R code style
 
 ---
 
