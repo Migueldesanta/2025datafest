@@ -88,6 +88,14 @@ If you are a competition judge, instructor, or reviewer seeking access, please c
 
 ---
 
+## 🧾 Acknowledgements
+
+This repository was forked and adapted from the [EducationShinyAppTeam/App_Template](https://github.com/EducationShinyAppTeam/App_Template), originally created by the Education Shiny App Team for instructional and research use.
+
+We thank the original authors for providing the structural foundation for our project.
+
+---
+
 ## 📄 License
 
 This project is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** license.
