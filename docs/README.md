@@ -71,10 +71,10 @@ The dashboard includes four interactive pages:
 
 ## 👥 Team
 
-- [MichaelYun](https://github.com/Migueldesanta)
-- @RunyiZhang  
-- [JingchunZhang](https://github.com/Jingchunz)
-- @ZhaoyuHou
+- [Michael Yun](https://github.com/Migueldesanta)
+- @Runyi Zhang  
+- [Jingchun Zhang](https://github.com/Jingchunz)
+- @Zhaoy uHou
 
 ---
 
