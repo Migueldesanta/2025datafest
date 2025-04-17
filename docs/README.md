@@ -61,7 +61,7 @@ The dashboard includes four interactive pages:
 
 - [MichaelYun](https://github.com/Migueldesanta)
 - @RunyiZhang  
-- @JingchunZhang  
+- [JingchunZhang](https://github.com/Jingchunz)
 - @ZhaoyuHou
 
 ---
