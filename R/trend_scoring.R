@@ -4,7 +4,7 @@ library(tidyr)
 library(scales)
 
 # Step 1: Load processed feature data
-features <- read_csv("C:/Users/yunxi/Desktop/Dataset 2025/feature/features.csv")
+features <- read_csv("data/processed/features.csv")
 
 # Step 2: Select and clean relevant columns
 selected <- features %>%

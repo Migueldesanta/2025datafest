@@ -6,7 +6,7 @@ library(caret)
 library(Metrics)
 
 # Step 1: Load Data
-features <- read_csv("C:/Users/16957/Downloads/Dataset 2025/Dataset 2025/feature/features.csv") %>%
+features <- read_csv("data/processed/features.csv") %>%
   filter(year > 2021 | (year == 2021 & quarter == "Q4")) %>%
   mutate(
     quarter_num = case_when(
